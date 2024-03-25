@@ -1,2 +1,2 @@
 # RazUI
-INI-based UI Engine made using Pygame.
+Simple UI Engine for Python. Work in progress.
