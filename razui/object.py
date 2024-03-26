@@ -1,21 +1,33 @@
 from .render import *
+from PIL import Image as image
 
 class Object:
     def __init__(self, object: dict):
-        print("creation of button object")
-
         self.areaWidth =[eval(i) for i in object["AreaWidth"].split(":")]
         self.areaHeight = [eval(i) for i in object["AreaHeight"].split(":")]
 
         match object["Type"]:
             case "Button":
-                print("creation of button object")
+                self.sprites = Renderer.spritesFromSpriteSheet(image.open("razui/default_assets/button.png"), (12,12))
+                self.sprite = self.sprites[0]
+                self.spriteBorderWidth = 4
             case "Label":
-                print("creation of label object")
+                self.sprite = image.open("razui/default_assets/label.png")
+                self.spriteBorderWidth = 4
 
     def bindEvent(self):
         pass
-    
+
+    def renderSprite(self, spriteSize: tuple):
+        self.renderedSprite = Renderer.generateSplitSpritesheetFrameImage(self.sprite, self.spriteBorderWidth, spriteSize)
+
+    def setPosition(self, position: tuple):
+        self.position = position
+
+    def getRenderedSprite(self) -> image:
+        return self.renderedSprite
+    def getPosition(self) -> tuple:
+        return self.position
 
 class ContainerObject:
     def __init__(self, object: dict, children: dict):

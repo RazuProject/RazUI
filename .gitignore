@@ -1,4 +1,10 @@
-.vscode
+.vscode/
+*/.vscode/
+*/*/.vscode/
+*/*/*/.vscode/
+*/*/*/*/.vscode/
+*/*/*/*/*/.vscode/
+
 drugs.png
 
 __pycache__/

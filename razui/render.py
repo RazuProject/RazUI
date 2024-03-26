@@ -70,27 +70,32 @@ class Renderer:
         ))
 
         newWidth, newHeight = newFrameSize
-        result = image.new(mode="RGB", size=newFrameSize)
+        result = image.new(mode="RGBA", size=newFrameSize)
 
         result.paste(topLeft, (0,0))
         result.paste(topRight, (newWidth-borderWidth,0))
         result.paste(bottomLeft, (0,newHeight-borderWidth))
         result.paste(bottomRight, (newWidth-borderWidth,newHeight-borderWidth))
 
-        top = top.resize((newWidth-borderWidth*2,borderWidth))
-        result.paste(top, (borderWidth,0))
+        if newWidth-borderWidth*2 > 0:
+            top = top.resize((newWidth-borderWidth*2,borderWidth))
+            result.paste(top, (borderWidth,0))
         
-        bottom = bottom.resize((newWidth-borderWidth*2, borderWidth))
-        result.paste(bottom, (borderWidth,newHeight-borderWidth))
+        if newWidth-borderWidth*2 > 0:
+            bottom = bottom.resize((newWidth-borderWidth*2, borderWidth))
+            result.paste(bottom, (borderWidth,newHeight-borderWidth))
 
-        left = left.resize((borderWidth, newHeight-borderWidth*2))
-        result.paste(left, (0,borderWidth))
+        if newHeight-borderWidth*2 > 0:
+            left = left.resize((borderWidth, newHeight-borderWidth*2))
+            result.paste(left, (0,borderWidth))
 
-        right = right.resize((borderWidth, newHeight-borderWidth*2))
-        result.paste(right, (newWidth-borderWidth,borderWidth))
-
-        center = center.resize((newWidth-borderWidth*2,newHeight-borderWidth*2))
-        result.paste(center, (borderWidth,borderWidth))
+        if newHeight-borderWidth*2 > 0:
+            right = right.resize((borderWidth, newHeight-borderWidth*2))
+            result.paste(right, (newWidth-borderWidth,borderWidth))
+        
+        if newWidth-borderWidth*2 > 0 and newHeight-borderWidth*2 > 0:
+            center = center.resize((newWidth-borderWidth*2,newHeight-borderWidth*2))
+            result.paste(center, (borderWidth,borderWidth))
 
         return result
     
@@ -107,12 +112,30 @@ class Renderer:
 
         text.text((int((frameWidth-textWidth)/2),int(frameHeight/2)+32), f"{frameWidth}x{frameHeight}", (255,255,255), align="center")
 
-        frame.save("drugs.png")
+        return frame
 
     @staticmethod
     def convertPillowImageToPygameImage(image: image) -> pygame.image:
-        return pygame.image.fromstring(image.tobytes(), image.size, "RGB")
+        return pygame.image.fromstring(image.tobytes(), image.size, "RGBA")
+    
+    @staticmethod
+    def spritesFromSpriteSheet(spriteSheet: image, spriteSize: tuple) -> image:
+        sprites = []
+        sheetWidth, sheetHeight = spriteSheet.size
 
+        for y in range(0, sheetHeight, int(spriteSize[1])):
+            for x in range(0, sheetWidth, spriteSize[0]):
+                sprite = spriteSheet.crop((
+                    x,
+                    y,
+                    x + spriteSize[0],
+                    y + spriteSize[1]
+                ))
+                sprite = sprite.convert("RGBA")
+                sprites.append(sprite)
+
+        return sprites
+    
     @staticmethod
     def reszizQASDFsdfoiüpkasdasdöskdaksdöaksdö():
         print("reszizQASDFsdfoiüpkasdasdöskdaksdöaksdö ;()")
@@ -123,7 +146,7 @@ class Renderer:
         print("The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. [beep] A single lap should be completed each time you hear this sound. [ding] Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, start.")
     
     def do_thingy(self, size):
-        im = image.new(mode="RGB", size=size)
+        im = image.new(mode="RGBA", size=size)
         im.show()
 
         data = im.tobytes()
@@ -133,5 +156,3 @@ class Renderer:
 rendererThing = Renderer()
 
 rendererThing.generateSplitSpritesheetFrameImage(image.open("razui/default_assets/fallback_image.png"), 8, (240, 160))
-
-rendererThing.generateFallbackImage((240, 160))
