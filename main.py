@@ -2,6 +2,12 @@ import razui
 
 coolWindow = razui.Window("window.ini")
 
-""" coolObjects = coolWindow.Objects
+coolObjects = coolWindow.Objects
 
-coolObjects["Button"].bindEvent("click", function) """
+def buttonClicked():
+    print("Click!!!!")
+
+coolObjects["Button"].bindEvent("active", buttonClicked)
+coolObjects["SecondButton"].bindEvent("active", buttonClicked)
+
+coolWindow.run()

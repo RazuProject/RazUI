@@ -1,5 +1,5 @@
 def read_ini(path: str) -> dict:
-    with open(path, "r", encoding="utf-8") as ini_file: ini = ini_file.read(); ini_file.close()
+    with open(path, "r", encoding="iso-8859-1") as ini_file: ini = ini_file.read(); ini_file.close()
     
     result = {}
     current_header = None
