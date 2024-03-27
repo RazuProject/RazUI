@@ -35,10 +35,10 @@ class Window:
         
         # https://images-ext-1.discordapp.net/external/JBZ3yVKtL-rx2ZbgqjePnzMIjqhqTB8ETpE9KI3n-Q4/https/media.tenor.com/n5rrafoDxAUAAAPo/pan-cake.mp4
 
-        my_font = pygame.freetype.SysFont('Sans', 16)
-        
-        for object in self.Objects:
-            renderedObject = calculateObjectSize(self.Objects[object], self.size, self.config["Layout"]["Grid"])
+        font = pygame.freetype.SysFont('Sans', 16)
+
+        for object in self.__frame["Objects"]:
+            renderedObject = calculateObjectSize(self.__frame["Objects"][object], self.size, self.config["Layout"]["Grid"])
             renderedObject.setPygameSprite(Renderer.convertPillowImageToPygameImage(renderedObject.getRenderedSprite()))
 
             self.__screen.blit(renderedObject.getPygameSprite(), renderedObject.getPosition())
@@ -47,22 +47,32 @@ class Window:
                 spriteX, spriteY = renderedObject.getPosition()
                 spriteWidth, spriteHeight = renderedObject.getRenderedSprite().size
 
-                textX, textY, textWidth, textHeight = my_font.get_rect(renderedObject.getLabel(), size = 16)
+                textX, textY, textWidth, textHeight = font.get_rect(renderedObject.getLabel(), size = 16)
 
                 fontPosition = (
                     spriteX + int(spriteWidth/2) - int(textWidth/2),
                     spriteY + int(spriteHeight/2) - int(textHeight/2)
                 )
 
-                my_font.render_to(self.__screen, fontPosition, renderedObject.getLabel(), (0, 0, 0))
+                font.render_to(self.__screen, fontPosition, renderedObject.getLabel(), (0, 0, 0))
 
         pygame.display.flip()
+
+    def setFrame(self, frame: str):
+        self.__frame = self.Frames[frame]
+        self.renderFrame()
 
     def __init__(self, config: str):
         self.config = read_ini(config)
 
-        self.layout = read_ini(self.config["Layout"]["Frames"].split(",")[0])
-        self.Objects = getObjectsFromConfigFile(self.layout)
+        self.Frames = {}
+
+        for frame in self.config["Layout"]["Frames"].split("\",\""):
+            self.Frames[frame] = read_ini(frame)
+            self.Frames[frame]["Objects"] = getObjectsFromConfigFile(self.Frames[frame])
+            
+        self.__frame = self.Frames[self.config["Layout"]["Frames"].split("\",\"")[0]]
+
         self.size = (self.config["Window"]["Width"],self.config["Window"]["Height"])
 
         print("setted up??? (real!??????)")
@@ -80,21 +90,21 @@ class Window:
         
         while running:
             for event in pygame.event.get():
-                for object in self.Objects:
+                for object in self.__frame["Objects"]:
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        if self.Objects[object].getCollissionRect().collidepoint(event.pos):
-                            self.Objects[object].onActive()
+                        if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
+                            self.__frame["Objects"][object].onActive()
                             self.renderFrame()
                     if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                        if self.Objects[object].getCollissionRect().collidepoint(event.pos):
-                            self.Objects[object].onHover()
+                        if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
+                            self.__frame["Objects"][object].onHover()
                             self.renderFrame()
                     elif event.type == pygame.MOUSEMOTION:
-                        if self.Objects[object].getCollissionRect().collidepoint(event.pos):
-                            self.Objects[object].onHover()
+                        if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
+                            self.__frame["Objects"][object].onHover()
                             self.renderFrame()
                         else:
-                            self.Objects[object].onStatic()
+                            self.__frame["Objects"][object].onStatic()
                             self.renderFrame()
                         
                 if event.type == pygame.QUIT: 
