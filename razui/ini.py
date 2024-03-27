@@ -15,5 +15,4 @@ def read_ini(path: str) -> dict:
             continue
         result[current_header][line.split("=",1)[0].strip()] = line.split("=",1)[1].strip()
     
-    print(result)
     return result

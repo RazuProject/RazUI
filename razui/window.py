@@ -10,7 +10,7 @@ environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 import pygame.freetype
 
-def calculateObjectSize(object: Object | ContainerObject, windowSize: tuple, gridSize: int) -> Object:
+def calculateObjectSize(object: Object, windowSize: tuple, gridSize: int) -> Object:
     xList = range(0, int(windowSize[0] / gridSize))
     yList = range(0, int(windowSize[1] / gridSize))
 
@@ -35,26 +35,28 @@ class Window:
         
         # https://images-ext-1.discordapp.net/external/JBZ3yVKtL-rx2ZbgqjePnzMIjqhqTB8ETpE9KI3n-Q4/https/media.tenor.com/n5rrafoDxAUAAAPo/pan-cake.mp4
 
-        font = pygame.freetype.SysFont('Sans', 16)
-
         for object in self.__frame["Objects"]:
-            renderedObject = calculateObjectSize(self.__frame["Objects"][object], self.size, self.config["Layout"]["Grid"])
-            renderedObject.setPygameSprite(Renderer.convertPillowImageToPygameImage(renderedObject.getRenderedSprite()))
 
-            self.__screen.blit(renderedObject.getPygameSprite(), renderedObject.getPosition())
+            if self.__frame["Objects"][object].getVisible():
+                renderedObject = calculateObjectSize(self.__frame["Objects"][object], self.__size, self.config["Layout"]["Grid"])
+                renderedObject.setPygameSprite(Renderer.convertPillowImageToPygameImage(renderedObject.getRenderedSprite()))
 
-            if renderedObject.getRenderText():
-                spriteX, spriteY = renderedObject.getPosition()
-                spriteWidth, spriteHeight = renderedObject.getRenderedSprite().size
+                self.__screen.blit(renderedObject.getPygameSprite(), renderedObject.getPosition())
 
-                textX, textY, textWidth, textHeight = font.get_rect(renderedObject.getLabel(), size = 16)
+                if renderedObject.getRenderText():
+                    font = pygame.freetype.SysFont('Sans', self.__frame["Objects"][object].getLabelSize())
 
-                fontPosition = (
-                    spriteX + int(spriteWidth/2) - int(textWidth/2),
-                    spriteY + int(spriteHeight/2) - int(textHeight/2)
-                )
+                    spriteX, spriteY = renderedObject.getPosition()
+                    spriteWidth, spriteHeight = renderedObject.getRenderedSprite().size
 
-                font.render_to(self.__screen, fontPosition, renderedObject.getLabel(), (0, 0, 0))
+                    textX, textY, textWidth, textHeight = font.get_rect(renderedObject.getLabel(), size=self.__frame["Objects"][object].getLabelSize())
+
+                    fontPosition = (
+                        spriteX + int(spriteWidth/2) - int(textWidth/2),
+                        spriteY + int(spriteHeight/2) - int(textHeight/2)
+                    )
+
+                    font.render_to(self.__screen, fontPosition, renderedObject.getLabel(), (0, 0, 0))
 
         pygame.display.flip()
 
@@ -73,11 +75,14 @@ class Window:
             
         self.__frame = self.Frames[self.config["Layout"]["Frames"].split("\",\"")[0]]
 
-        self.size = (self.config["Window"]["Width"],self.config["Window"]["Height"])
+        self.__size = (
+            self.config["Window"]["Width"] * self.config["Layout"]["Grid"],
+            self.config["Window"]["Height"] * self.config["Layout"]["Grid"]
+        )
 
         print("setted up??? (real!??????)")
   
-        self.__screen = pygame.display.set_mode(self.size) 
+        self.__screen = pygame.display.set_mode(self.__size) 
         
         pygame.display.set_caption(self.config["Window"]["Title"]) 
 
@@ -91,21 +96,22 @@ class Window:
         while running:
             for event in pygame.event.get():
                 for object in self.__frame["Objects"]:
-                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
-                            self.__frame["Objects"][object].onActive()
-                            self.renderFrame()
-                    if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                        if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
-                            self.__frame["Objects"][object].onHover()
-                            self.renderFrame()
-                    elif event.type == pygame.MOUSEMOTION:
-                        if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
-                            self.__frame["Objects"][object].onHover()
-                            self.renderFrame()
-                        else:
-                            self.__frame["Objects"][object].onStatic()
-                            self.renderFrame()
+                    if self.__frame["Objects"][object].getVisible():
+                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                            if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
+                                self.__frame["Objects"][object].onActive()
+                                self.renderFrame()
+                        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                            if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
+                                self.__frame["Objects"][object].onHover()
+                                self.renderFrame()
+                        elif event.type == pygame.MOUSEMOTION:
+                            if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
+                                self.__frame["Objects"][object].onHover()
+                                self.renderFrame()
+                            else:
+                                self.__frame["Objects"][object].onStatic()
+                                self.renderFrame()
                         
                 if event.type == pygame.QUIT: 
                     running = False

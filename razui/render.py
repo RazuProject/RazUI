@@ -101,16 +101,16 @@ class Renderer:
     
     def generateFallbackImage(self, size: tuple) -> image:
         frame = self.generateSplitSpritesheetFrameImage(image.open("razui/default_assets/fallback_image.png"), 8, size)
-        icon = image.open("razui/default_assets/icon.png")
+        icon = image.open("razui/default_assets/icon.png").convert("RGBA")
 
         frameWidth, frameHeight = frame.size
 
-        frame.paste(icon, (int(frameWidth/2)-8,int(frameHeight/2)-8))
+        frame.paste(icon, (int(frameWidth/2)-8,int(frameHeight/2)-8), mask=icon)
 
         text = imageDraw.Draw(frame)
-        textWidth = text.textlength(f"{frameWidth} x {frameHeight}")
+        textWidth = text.textlength(f"{frameWidth}x{frameHeight}")
 
-        text.text((int((frameWidth-textWidth)/2),int(frameHeight/2)+32), f"{frameWidth}x{frameHeight}", (255,255,255), align="center")
+        text.text((int((frameWidth/2)-(textWidth/2)),int(frameHeight/2)+16), f"{frameWidth}x{frameHeight}", (255,255,255))
 
         return frame
 

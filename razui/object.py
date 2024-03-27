@@ -15,6 +15,12 @@ class Object:
         self.__type = object["Type"]
         self.__hoverBinded = []
         self.__activeBinded = []
+        self.__visible = True
+
+        try:
+            self.__labelSize = int(object["LabelSize"])
+        except:
+            self.__labelSize = 16
 
         match self.__type:
             case "Button":
@@ -28,12 +34,24 @@ class Object:
                 self.__spriteBorderWidth = 4
                 self.__renderText = True
                 self.__label = object["Label"]
+            case "Image":
+                self.__renderText = False
+                try:
+                    self.__image = image.open(object["Image"])
+                except:
+                    pass
 
     def getCollissionRect(self) -> pygame.rect:
         return self.getPygameSprite().get_rect(topleft=self.getPosition())
 
     def renderSprite(self, spriteSize: tuple):
-        self.__renderedSprite = Renderer.generateSplitSpritesheetFrameImage(self.__sprite, self.__spriteBorderWidth, spriteSize)
+        if self.__type == "Image":
+            try:
+                self.__renderedSprite = self.__image.resize(spriteSize).convert("RGBA")
+            except:
+                self.__renderedSprite = Renderer.generateFallbackImage(Renderer, spriteSize)
+        else:
+            self.__renderedSprite = Renderer.generateSplitSpritesheetFrameImage(self.__sprite, self.__spriteBorderWidth, spriteSize)
     def getRenderedSprite(self) -> image:
         return self.__renderedSprite
 
@@ -57,6 +75,14 @@ class Object:
         return self.__areaWidth
     def getAreaHeight(self) -> list:
         return self.__areaHeight
+
+    def setVisible(self, visible: bool):
+        self.__visible = visible
+    def getVisible(self) -> bool:
+        return self.__visible
+    
+    def getLabelSize(self):
+        return self.__labelSize
     
     # ===== Events =====
     
@@ -89,25 +115,10 @@ class Object:
                 self.__sprite = self.__sprites[2]
                 for func in self.__activeBinded: func()
 
-class ContainerObject:
-    def __init__(self, object: dict, children: dict):
-        self.children = {}
-
-        for child in children:
-            if child in object["Children"].split(","): self.children[child] = children[child]
-
-        print(self.children)
-        print("creation of container object")
-
 def getObjectsFromConfigFile(config: dict) -> dict:
     result = {}
 
     for object in config:
-        objectType = config[object]["Type"]
-
-        if objectType == "Container":
-            result[object] = ContainerObject(config[object], config)
-        elif objectType in ["Label", "Button"]:
-            result[object] = Object(config[object])
+        result[object] = Object(config[object])
 
     return result
