@@ -14,8 +14,8 @@ def secondButtonClicked():
 def frame2ButtonClicked():
     coolWindow.setFrame("frame_1.ini")
 
-coolObjects["Button"].bindEvent("active", buttonClicked)
-coolObjects["SecondButton"].bindEvent("active", secondButtonClicked)
-otherCoolObjects["Button"].bindEvent("active", frame2ButtonClicked)
+coolObjects["Button"].bindEvent("click", buttonClicked)
+coolObjects["SecondButton"].bindEvent("click", secondButtonClicked)
+otherCoolObjects["Button"].bindEvent("click", frame2ButtonClicked)
 
 coolWindow.run()

@@ -62,6 +62,8 @@ class Window:
 
     def setFrame(self, frame: str):
         self.__frame = self.Frames[frame]
+        for object in self.__frame["Objects"]:
+            self.__frame["Objects"][object].onStatic()
         self.renderFrame()
 
     def __init__(self, config: str):
@@ -96,22 +98,27 @@ class Window:
         while running:
             for event in pygame.event.get():
                 for object in self.__frame["Objects"]:
-                    if self.__frame["Objects"][object].getVisible():
-                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                            if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
-                                self.__frame["Objects"][object].onActive()
-                                self.renderFrame()
-                        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                            if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
-                                self.__frame["Objects"][object].onHover()
-                                self.renderFrame()
-                        elif event.type == pygame.MOUSEMOTION:
-                            if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
-                                self.__frame["Objects"][object].onHover()
-                                self.renderFrame()
-                            else:
-                                self.__frame["Objects"][object].onStatic()
-                                self.renderFrame()
+                    try:
+                        if self.__frame["Objects"][object].getVisible():
+                            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                                if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
+                                    self.__frame["Objects"][object].onActive()
+                                    self.renderFrame()
+                            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                                if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
+                                    self.__frame["Objects"][object].onClicked()
+                                    self.renderFrame()
+                            elif event.type == pygame.MOUSEMOTION:
+                                if pygame.mouse.get_pressed()[0] and self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
+                                    self.__frame["Objects"][object].onActive()
+                                elif self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
+                                    self.__frame["Objects"][object].onHover()
+                                    self.renderFrame()
+                                else:
+                                    self.__frame["Objects"][object].onStatic()
+                                    self.renderFrame()
+                    except KeyError:
+                        pass
                         
                 if event.type == pygame.QUIT: 
                     running = False

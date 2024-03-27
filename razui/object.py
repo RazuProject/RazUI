@@ -15,6 +15,7 @@ class Object:
         self.__type = object["Type"]
         self.__hoverBinded = []
         self.__activeBinded = []
+        self.__clickBinded = []
         self.__visible = True
 
         try:
@@ -92,6 +93,8 @@ class Object:
                 self.__hoverBinded.append(func)
             case "active":
                 self.__activeBinded.append(func)
+            case "click":
+                self.__clickBinded.append(func)
 
     def unbindEvent(self, event: str, func):
         match event:
@@ -99,6 +102,8 @@ class Object:
                 self.__hoverBinded.remove(func)
             case "active":
                 self.__activeBinded.remove(func)
+            case "click":
+                self.__clickBinded.remove(func)
 
     def onStatic(self):
         match self.__type:
@@ -114,6 +119,11 @@ class Object:
             case "Button":
                 self.__sprite = self.__sprites[2]
                 for func in self.__activeBinded: func()
+    def onClicked(self):
+        match self.__type:
+            case "Button":
+                self.__sprite = self.__sprites[1]
+                for func in self.__clickBinded: func()
 
 def getObjectsFromConfigFile(config: dict) -> dict:
     result = {}
