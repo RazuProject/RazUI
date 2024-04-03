@@ -135,15 +135,3 @@ class Renderer:
                 sprites.append(sprite)
 
         return sprites
-    
-    def do_thingy(self, size):
-        im = image.new(mode="RGBA", size=size)
-        im.show()
-
-        data = im.tobytes()
-
-        return pygame.image.fromstring(data, size, im.mode)
-    
-rendererThing = Renderer()
-
-rendererThing.generateSplitSpritesheetFrameImage(image.open("razui/default_assets/fallback_image.png"), 8, (240, 160))

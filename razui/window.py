@@ -1,5 +1,6 @@
 from .ini import *
 from .render import *
+from .rendering import *
 from .object import *
 
 import random
@@ -9,23 +10,6 @@ environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 import pygame
 import pygame.freetype
-
-def calculateObjectSize(object: Object, windowSize: tuple, gridSize: int) -> Object:
-    xList = range(0, int(windowSize[0] / gridSize))
-    yList = range(0, int(windowSize[1] / gridSize))
-
-    startX = xList[object.getAreaWidth()[0]] * gridSize
-    endX = xList[object.getAreaWidth()[1]] * gridSize
-    startY = yList[object.getAreaHeight()[0]] * gridSize
-    endY = yList[object.getAreaHeight()[1]] * gridSize
-    
-    xSize = endX - startX
-    ySize = endY - startY
-    
-    object.setPosition((startX, startY))
-    object.renderSprite((xSize, ySize))
-
-    return object
 
 class Window:
     def renderFrame(self):
@@ -38,7 +22,7 @@ class Window:
         for object in self.__frame["Objects"]:
 
             if self.__frame["Objects"][object].getVisible():
-                renderedObject = calculateObjectSize(self.__frame["Objects"][object], self.__size, self.config["Layout"]["Grid"])
+                renderedObject = Rendering.calculateObjectSize(self.__frame["Objects"][object], self.__size, self.config["Layout"]["Grid"])
                 renderedObject.setPygameSprite(Renderer.convertPillowImageToPygameImage(renderedObject.getRenderedSprite()))
 
                 self.__screen.blit(renderedObject.getPygameSprite(), renderedObject.getPosition())
@@ -94,29 +78,34 @@ class Window:
 
     def run(self):
         running = True
+
+        def objectCheck(event, object: Object):
+            collissionRect = object.getCollissionRect()
+
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if collissionRect.collidepoint(event.pos):
+                    object.onActive()
+                    self.renderFrame()
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                if collissionRect.collidepoint(event.pos):
+                    object.onClicked()
+                    self.renderFrame()
+            elif event.type == pygame.MOUSEMOTION:
+                if pygame.mouse.get_pressed()[0] and collissionRect.collidepoint(event.pos):
+                    object.onActive()
+                elif collissionRect.collidepoint(event.pos):
+                    object.onHover()
+                    self.renderFrame()
+                else:
+                    object.onStatic()
+                    self.renderFrame()
         
         while running:
             for event in pygame.event.get():
                 for object in self.__frame["Objects"]:
                     try:
                         if self.__frame["Objects"][object].getVisible():
-                            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                                if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
-                                    self.__frame["Objects"][object].onActive()
-                                    self.renderFrame()
-                            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                                if self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
-                                    self.__frame["Objects"][object].onClicked()
-                                    self.renderFrame()
-                            elif event.type == pygame.MOUSEMOTION:
-                                if pygame.mouse.get_pressed()[0] and self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
-                                    self.__frame["Objects"][object].onActive()
-                                elif self.__frame["Objects"][object].getCollissionRect().collidepoint(event.pos):
-                                    self.__frame["Objects"][object].onHover()
-                                    self.renderFrame()
-                                else:
-                                    self.__frame["Objects"][object].onStatic()
-                                    self.renderFrame()
+                            objectCheck(event, self.__frame["Objects"][object])
                     except KeyError:
                         pass
                         

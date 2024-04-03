@@ -12,6 +12,7 @@ class Object:
         self.__areaHeight = [eval(i) for i in object["AreaHeight"].split(":")]
         self.__renderText = False
         self.__label = ""
+        self.__labelAlign = "left"
         self.__type = object["Type"]
         self.__hoverBinded = []
         self.__activeBinded = []
@@ -30,11 +31,19 @@ class Object:
                 self.__spriteBorderWidth = 4
                 self.__renderText = True
                 self.__label = object["Label"]
+                try:
+                    self.__labelAlign = object["LabelAlign"]
+                except:
+                    self.__labelAlign = "Center"
             case "Label":
                 self.__sprite = image.open("razui/default_assets/label.png")
                 self.__spriteBorderWidth = 4
                 self.__renderText = True
                 self.__label = object["Label"]
+                try:
+                    self.__labelAlign = object["LabelAlign"]
+                except:
+                    self.__labelAlign = "Left"
             case "Image":
                 self.__renderText = False
                 try:
@@ -66,6 +75,16 @@ class Object:
     
     def getLabel(self) -> str:
         return self.__label
+    def setLabel(self, label: str):
+        self.__label = label
+    def getLabelSize(self):
+        return self.__labelSize
+    def setLabelSize(self, size: int):
+        self.__labelSize = size
+    def getLabelAlign(self) -> str:
+        return self.__labelAlign
+    def setLabelAlign(self, align: str):
+        self.__labelAlign = align if align in ["Left","Center","Right"] else None
     
     def setPygameSprite(self, sprite):
         self.__pygameSprite = sprite
@@ -81,9 +100,6 @@ class Object:
         self.__visible = visible
     def getVisible(self) -> bool:
         return self.__visible
-    
-    def getLabelSize(self):
-        return self.__labelSize
     
     # ===== Events =====
     
