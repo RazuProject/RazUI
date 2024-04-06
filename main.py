@@ -1,6 +1,6 @@
 import razui
 
-coolWindow = razui.Window("window.ini")
+coolWindow = razui.Window("window.ini", packedCheck=True)
 
 coolObjects = coolWindow.Frames["frame_1.ini"]["Objects"]
 otherCoolObjects = coolWindow.Frames["frame_2.ini"]["Objects"]

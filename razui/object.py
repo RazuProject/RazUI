@@ -18,6 +18,8 @@ class Object:
         self.__activeBinded = []
         self.__clickBinded = []
         self.__visible = True
+        self.__imagePath = ""
+        self.__isImage = False
 
         try:
             self.__labelSize = int(object["LabelSize"])
@@ -46,8 +48,10 @@ class Object:
                     self.__labelAlign = "Left"
             case "Image":
                 self.__renderText = False
+                self.__isImage = True
                 try:
-                    self.__image = image.open(object["Image"])
+                    self.__imagePath = object["Image"]
+                    self.__image = image.open(self.__imagePath)
                 except:
                     pass
 
@@ -100,6 +104,14 @@ class Object:
         self.__visible = visible
     def getVisible(self) -> bool:
         return self.__visible
+        
+    def getIsImage(self) -> bool:
+        return self.__isImage
+    def setImage(self, path: str):
+        self.__imagePath = path
+        self.__image = image.open(self.__imagePath)
+    def getImage(self) -> str:
+        return self.__imagePath
     
     # ===== Events =====
     

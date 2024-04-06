@@ -3,7 +3,8 @@ from .render import *
 from .rendering import *
 from .object import *
 
-import random
+import random, os, secrets, subprocess, shutil
+from zipfile import ZipFile
 
 from os import environ
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
@@ -22,7 +23,12 @@ class Window:
         for object in self.__frame["Objects"]:
 
             if self.__frame["Objects"][object].getVisible():
-                renderedObject = Rendering.calculateObjectSize(self.__frame["Objects"][object], self.__size, self.config["Layout"]["Grid"])
+                oldObject = self.__frame["Objects"][object]
+                
+                if self.__packed and oldObject.getIsImage() and not(oldObject.getImage().startswith(self.__subPath)):
+                    oldObject.setImage(self.__subPath + oldObject.getImage())
+                
+                renderedObject = Rendering.calculateObjectSize(oldObject, self.__size, self.config["Layout"]["Grid"])
                 renderedObject.setPygameSprite(Renderer.convertPillowImageToPygameImage(renderedObject.getRenderedSprite()))
 
                 self.__screen.blit(renderedObject.getPygameSprite(), renderedObject.getPosition())
@@ -50,13 +56,31 @@ class Window:
             self.__frame["Objects"][object].onStatic()
         self.renderFrame()
 
-    def __init__(self, config: str):
-        self.config = read_ini(config)
+    def __init__(self, config: str, subPath="", packedCheck=False):
+        self.__subPath = subPath
+        self.__packedCheck = packedCheck
+        self.__packed = False
+        if self.__packedCheck and os.path.exists("packed"):
+            self.__packed = True
+
+            n = 4*3//4
+
+            packedFile = ZipFile("packed", "r")
+            self.__tempDirectory = "PCK-" + secrets.token_urlsafe(n)
+            os.mkdir(self.__tempDirectory, 0o666)
+            subprocess.check_call(["attrib","+H",self.__tempDirectory])
+
+            packedFile.extractall(self.__tempDirectory)
+            packedFile.close()
+
+            self.__subPath = self.__tempDirectory + "/"
+
+        self.config = read_ini(self.__subPath + config)
 
         self.Frames = {}
 
         for frame in self.config["Layout"]["Frames"].split("\",\""):
-            self.Frames[frame] = read_ini(frame)
+            self.Frames[frame] = read_ini(self.__subPath + frame)
             self.Frames[frame]["Objects"] = getObjectsFromConfigFile(self.Frames[frame])
             
         self.__frame = self.Frames[self.config["Layout"]["Frames"].split("\",\"")[0]]
@@ -108,6 +132,7 @@ class Window:
                             objectCheck(event, self.__frame["Objects"][object])
                     except KeyError:
                         pass
-                        
                 if event.type == pygame.QUIT: 
+                    if self.__packed:
+                        shutil.rmtree(self.__tempDirectory)
                     running = False
